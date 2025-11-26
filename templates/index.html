@@ -1,1 +1,357 @@
 
+<!DOCTYPE html>
+<html lang="en" data-theme="system">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Jar YT - Professional Video Downloader</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* --- CSS VARIABLES --- */
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --input-bg: #ffffff;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --radius: 16px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            --input-bg: #1e293b;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.5);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            transition: var(--transition);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* --- HEADER --- */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 5%;
+            background: rgba(var(--card-bg), 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #4f46e5, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+            cursor: pointer;
+        }
+
+        /* Only Theme Toggle remains in Header Actions */
+        .header-actions {
+            display: flex;
+            align-items: center;
+        }
+
+        /* --- THEME TOGGLE --- */
+        .theme-toggle-btn {
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            font-size: 1.1rem;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow);
+        }
+        .theme-toggle-btn:hover { border-color: var(--primary); color: var(--primary); transform: rotate(15deg); }
+
+        /* --- HERO SECTION --- */
+        .hero {
+            flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 2rem 1.5rem; text-align: center;
+        }
+
+        .hero h1 {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 800; line-height: 1.2; margin-bottom: 1rem; color: var(--text-main);
+        }
+        .hero span { color: var(--primary); }
+        .hero p { color: var(--text-muted); margin-bottom: 2rem; max-width: 500px; font-size: 1rem; line-height: 1.6; }
+
+        /* --- RESPONSIVE SEARCH INPUT --- */
+        .search-container {
+            width: 100%; max-width: 650px; position: relative; display: flex; gap: 10px;
+        }
+
+        .url-input {
+            flex: 1; padding: 16px 24px; border-radius: 50px; border: 2px solid var(--border-color);
+            background: var(--input-bg); color: var(--text-main); font-size: 1rem; outline: none;
+            transition: var(--transition); width: 100%;
+        }
+        .url-input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); }
+
+        .search-btn {
+            padding: 16px 32px; border-radius: 50px; border: none;
+            background: linear-gradient(135deg, var(--primary), #ec4899);
+            color: white; font-weight: 600; font-size: 1rem; cursor: pointer;
+            transition: var(--transition); white-space: nowrap;
+        }
+        .search-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(79, 70, 229, 0.5); }
+
+        /* --- RESULTS SECTION --- */
+        .results-area { width: 100%; max-width: 900px; margin: 0 auto 3rem auto; padding: 0 1.5rem; display: none; }
+        
+        .video-card {
+            background: var(--card-bg); border-radius: var(--radius); border: 1px solid var(--border-color);
+            overflow: hidden; display: flex; flex-direction: column; box-shadow: var(--shadow);
+            animation: slideUp 0.5s ease;
+        }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .thumbnail-container { width: 100%; aspect-ratio: 16/9; position: relative; overflow: hidden; background: #000; }
+        .thumbnail-container img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .video-details { padding: 1.5rem; flex: 1; }
+        .video-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem; line-height: 1.4; }
+        .video-meta { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem; }
+
+        .download-options h3 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 10px; }
+        
+        .btn-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; margin-bottom: 1.5rem;
+        }
+
+        .dl-btn {
+            padding: 10px; border: 1px solid var(--border-color); background: var(--bg-color);
+            color: var(--text-main); border-radius: 8px; cursor: pointer; font-size: 0.85rem; text-align: center;
+            text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: var(--transition);
+        }
+        .dl-btn small { font-size: 0.7rem; opacity: 0.8; margin-top: 2px; }
+        .dl-btn:hover { border-color: var(--primary); color: var(--primary); background: rgba(79, 70, 229, 0.05); }
+        .dl-btn.primary { background: var(--primary); color: white; border: none; }
+        .dl-btn.primary:hover { opacity: 0.9; }
+
+        /* --- MEDIA QUERIES --- */
+        @media (min-width: 768px) {
+            .video-card { flex-direction: row; }
+            .thumbnail-container { width: 40%; aspect-ratio: auto; }
+            .video-details { padding: 2rem; }
+            .video-title { font-size: 1.3rem; }
+        }
+
+        @media (max-width: 600px) {
+            header { padding: 1rem 1rem; }
+            .logo { font-size: 1.3rem; }
+            .hero { padding-top: 2rem; }
+            .search-container { flex-direction: column; gap: 12px; }
+            .url-input { border-radius: 12px; padding: 14px; }
+            .search-btn { width: 100%; border-radius: 12px; padding: 14px; }
+        }
+
+        /* Loader */
+        .loader { display: none; margin-top: 20px; }
+        .spinner { width: 40px; height: 40px; border: 4px solid var(--border-color); border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto; }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo" onclick="location.reload()">Jar YT</div>
+        
+        <div class="header-actions">
+            <button class="theme-toggle-btn" onclick="toggleTheme()" title="Switch Theme">
+                <i class="fas fa-adjust" id="theme-icon"></i>
+            </button>
+        </div>
+    </header>
+
+    <section class="hero" id="hero-section">
+        <h1>Download Video from <br> <span>YouTube</span> simply.</h1>
+        <p>Paste the YouTube URL below to download MP4, MP3, and Thumbnails securely.</p>
+        
+        <div class="search-container">
+            <input type="text" class="url-input" placeholder="Paste YouTube link here..." id="video-url">
+            <button class="search-btn" onclick="fetchVideo()">Get Video</button>
+        </div>
+        
+        <div class="loader" id="loader"><div class="spinner"></div></div>
+    </section>
+
+    <div class="results-area" id="results-area">
+        <div class="video-card">
+            <div class="thumbnail-container">
+                <img src="" alt="Thumbnail" id="res-thumb">
+            </div>
+            <div class="video-details">
+                <h2 class="video-title" id="res-title">Video Title</h2>
+                <p class="video-meta" id="res-meta">Duration: 10:05 • Views: 1.2M</p>
+
+                <div class="download-options">
+                    <h3>Video Downloads</h3>
+                    <div class="btn-grid" id="video-grid">
+                        </div>
+
+                    <h3>Audio Downloads</h3>
+                    <div class="btn-grid" id="audio-grid">
+                        </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* --- 1. THEME ENGINE --- */
+        const html = document.documentElement;
+        const themeIcon = document.getElementById('theme-icon');
+        let currentTheme = localStorage.getItem('theme') || 'system';
+
+        function applyTheme(theme) {
+            if (theme === 'system') {
+                const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                html.setAttribute('data-theme', systemDark ? 'dark' : 'light');
+                themeIcon.className = 'fas fa-desktop';
+            } else {
+                html.setAttribute('data-theme', theme);
+                themeIcon.className = theme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+            }
+            localStorage.setItem('theme', theme);
+        }
+        function toggleTheme() {
+            currentTheme = currentTheme === 'system' ? 'dark' : (currentTheme === 'dark' ? 'light' : 'system');
+            applyTheme(currentTheme);
+        }
+        applyTheme(currentTheme);
+
+
+        /* --- 2. BACKEND CONNECTION (NO LOGIN REQUIRED) --- */
+        async function fetchVideo() {
+            const urlInput = document.getElementById('video-url');
+            const url = urlInput.value.trim();
+            
+            if (!url) { alert("Please enter a valid YouTube URL."); return; }
+
+            // UI Loading State
+            const loader = document.getElementById('loader');
+            const resultsArea = document.getElementById('results-area');
+            
+            loader.style.display = 'block';
+            resultsArea.style.display = 'none';
+
+            try {
+                // Call Python Backend
+                const response = await fetch('/api/get-info', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: url })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    const data = result.data;
+                    
+                    // Update DOM
+                    document.getElementById('res-title').innerText = data.title;
+                    document.getElementById('res-thumb').src = data.thumbnail;
+                    document.getElementById('res-meta').innerText = `Duration: ${data.duration} • Views: ${formatViews(data.views)}`;
+                    
+                    // Generate Buttons
+                    renderButtons(data.formats);
+                    
+                    // Show Result
+                    resultsArea.style.display = 'block';
+                    
+                    // Smooth scroll to results on mobile
+                    if(window.innerWidth < 768) {
+                        resultsArea.scrollIntoView({ behavior: 'smooth' });
+                    }
+
+                } else {
+                    alert("Error from Server: " + result.error);
+                }
+
+            } catch (error) {
+                console.error(error);
+                alert("Failed to connect to backend server. Make sure app.py is running.");
+            } finally {
+                loader.style.display = 'none';
+            }
+        }
+
+        // Helper: Format Views (e.g. 1.2M)
+        function formatViews(views) {
+            if (!views) return '0';
+            if (views >= 1000000) return (views / 1000000).toFixed(1) + 'M';
+            if (views >= 1000) return (views / 1000).toFixed(1) + 'K';
+            return views;
+        }
+
+        // Helper: Render Download Buttons
+        function renderButtons(formats) {
+            const videoGrid = document.getElementById('video-grid');
+            const audioGrid = document.getElementById('audio-grid');
+            
+            videoGrid.innerHTML = '';
+            audioGrid.innerHTML = '';
+
+            formats.forEach(fmt => {
+                const btn = document.createElement('a');
+                btn.className = 'dl-btn';
+                if(fmt.type === 'video' && fmt.quality.includes('1080')) btn.classList.add('primary');
+                
+                // Direct Link
+                btn.href = fmt.url;
+                btn.target = "_blank"; 
+                btn.setAttribute('download', '');
+
+                btn.innerHTML = `
+                    ${fmt.quality || fmt.resolution || 'Download'} 
+                    <small>${fmt.size}</small>
+                `;
+
+                if (fmt.type === 'video') {
+                    videoGrid.appendChild(btn);
+                } else {
+                    audioGrid.appendChild(btn);
+                }
+            });
+        }
+    </script>
+</body>
+  </html>
+  
